@@ -8,6 +8,46 @@ describe('update', function() {
     });
   });
 
+  describe('$map', function() {
+    it('maps an array', function() {
+      expect(update([1, 2, 3, 4], {$map: function(v) {
+        return v + 1;
+      }})).toEqual([2, 3, 4, 5]);
+    });
+    it('maps an array of objects', function() {
+      expect(update([{a: 1}, {a: 2}, {a: 3}, {a: 4}], {$map: {a: function(v) {
+        return v + 1;
+      }}})).toEqual([{a: 2}, {a: 3}, {a: 4}, {a: 5}]);
+    });
+    
+    it('maps a nested array of objects', function() {
+      expect(update(
+        {q: [
+          {a: [{a: 1}, {a: 2}, {a: 3}, {a: 4}]}, 
+          {a: [{a: 2}, {a: 3}, {a: 4}, {a: 5}]}
+        ]}, 
+        {q: {$map: 
+          {a: {$map: 
+            {a: function(v) {
+              return v + 1;
+            }}
+          }}
+        }}
+      )).toEqual(
+        {q: [
+          {a: [{a: 2}, {a: 3}, {a: 4}, {a: 5}]}, 
+          {a: [{a: 3}, {a: 4}, {a: 5}, {a: 6}]}
+        ]});
+    });
+    it('fails on non-array element', function() {
+      expect(update.bind(null, {q: 7}, {q: {$map: function(v) {
+        return v + 1;
+      }}})).toThrow(
+        'update(): $map expects its target to be an array; got 7'
+      );
+    });
+  });
+
   describe('$push', function() {
     it('pushes', function() {
       expect(update([1], {$push: [7]})).toEqual([1, 7]);
@@ -414,7 +454,7 @@ describe('update', function() {
         'update(): You provided an invalid spec to update(). The spec ' +
         'and every included key path must be plain objects containing one ' +
         'of the following commands: $push, $unshift, $splice, $set, $toggle, $unset, ' +
-        '$add, $remove, $merge, $apply.'
+        '$add, $remove, $map, $merge, $apply.'
       );
     });
   });

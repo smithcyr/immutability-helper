@@ -73,7 +73,7 @@ function newContext() {
     getAllKeys(spec).forEach(function(key) {
       if (hasOwnProperty.call(commands, key)) {
         var objectWasNextObject = object === nextObject;
-        nextObject = commands[key](spec[key], nextObject, spec, object);
+        nextObject = commands[key](spec[key], nextObject, spec, object, update);
         if (objectWasNextObject && update.isEquals(nextObject, object)) {
           nextObject = object;
         }
@@ -172,6 +172,12 @@ var defaultCommands = {
     });
     return nextObject;
   },
+  $map: function(value, nextObject, spec, originalObject, update) {
+    invariantMap(nextObject, '$map');
+    return nextObject.map(function(element) {
+      return update(element, value);
+    });
+  },
   $merge: function(value, nextObject, spec, originalObject) {
     invariantMerge(nextObject, value);
     getAllKeys(value).forEach(function(key) {
@@ -269,5 +275,13 @@ function invariantMapOrSet(target, command) {
     'update(): %s expects a target of type Set or Map; got %s',
     command,
     typeOfTarget
+  );
+}
+
+function invariantMap(value) {
+  invariant(
+    Array.isArray(value),
+    'update(): $map expects its target to be an array; got %s',
+    value
   );
 }

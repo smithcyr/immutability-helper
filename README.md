@@ -126,6 +126,7 @@ The `$`-prefixed keys are called *commands*. The data structure they are
   `update(myMap, {$add: [['foo', 'bar'], ['baz', 'boo']]})`
   * `{$remove: array of strings}` remove the list of keys in array from a `Map`
   or `Set`.
+  * `{$map: spec}` map update with `spec` to each element of the target array.
 
 ### Shorthand `$apply` syntax
 
@@ -169,6 +170,12 @@ const newObj2 = update(obj, {b: {$set: obj.b * 2}});
 ```js
 const obj = {a: 5, b: 3};
 const newObj = update(obj, {$merge: {b: 6, c: 7}}); // => {a: 5, b: 6, c: 7}
+```
+
+### Applying a spec to an array of elements
+```js
+const obj = {a: [{b: 1}, {b: 2}]};
+const newObj = update(obj, {a: {$map: {b: v => v + 1}}}) // => {a: [{b: 2}, {b: 3}]}
 ```
 
 ### Computed Property Names
